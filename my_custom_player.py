@@ -1,6 +1,6 @@
 
 from sample_players import DataPlayer
-
+import random
 
 class CustomPlayer(DataPlayer):
     """ Implement your own agent to play knight's Isolation
@@ -36,11 +36,40 @@ class CustomPlayer(DataPlayer):
           Refer to (and use!) the Isolation.play() function to run games.
         **********************************************************************
         """
-        # TODO: Replace the example implementation below with your own search
-        #       method by combining techniques from lecture
-        #
-        # EXAMPLE: choose a random move without any search--this function MUST
-        #          call self.queue.put(ACTION) at least once before time expires
-        #          (the timer is automatically managed for you)
-        import random
-        self.queue.put(random.choice(state.actions()))
+        if state.ply_count < 2:
+            self.queue.put(random.choice(state.actions()))
+        else:
+            self.queue.put(self.alphabeta_search(state, 3))
+
+    def alphabeta_search(self, state, depth):    
+
+        def min_value(state, depth, alpha, beta):
+            if state.terminal_test(): return state.utility(self.player_id)
+            if depth <= 0 : return self.score(state)
+            value = float("inf")
+            for action in state.actions():
+                value = min(value, max_value(state.result(action), depth - 1, alpha, beta))
+                if value <= alpha: return value
+                beta = min(beta, value)
+            return value 
+
+        def max_value(state, depth, alpha, beta):
+            if state.terminal_test(): return state.utility(self.player_id)
+            if depth <= 0 : return self.score(state)
+            value = float("-inf")
+            for action in state.actions():
+                value = max(value, min_value(state.result(action), depth - 1, alpha, beta))
+                if value >= beta: return value
+                alpha = max(alpha, value)
+            return value
+        
+        return max(state.actions(), key=lambda x: min_value(state.result(x), depth - 1, float('-inf'), float('inf')))       
+        
+    def score(self, state):
+        own_loc = state.locs[self.player_id]
+        opp_loc = state.locs[1 - self.player_id]
+        own_liberties = state.liberties(own_loc)     
+        opp_liberties = state.liberties(opp_loc)
+        future_own_liberties = sum(len(state.liberties(l)) for l in own_liberties)
+        future_opp_liberties = sum(len(state.liberties(l)) for l in opp_liberties)
+        return len(own_liberties) - 2 * len(opp_liberties) +  future_own_liberties - future_opp_liberties
