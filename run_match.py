@@ -17,8 +17,8 @@ from my_custom_player import CustomPlayer
 
 logger = logging.getLogger(__name__)
 
-NUM_PROCS = 1
-NUM_ROUNDS = 5  # number times to replicate the match; increase for higher confidence estimate
+NUM_PROCS = 4
+NUM_ROUNDS = 50  # number times to replicate the match; increase for higher confidence estimate
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 TEST_AGENTS = {

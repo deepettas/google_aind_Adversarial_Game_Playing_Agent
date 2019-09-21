@@ -1,6 +1,7 @@
-
 from sample_players import DataPlayer
 import random
+
+SEARCH_DEPTH = 1
 
 class CustomPlayer(DataPlayer):
     """ Implement your own agent to play knight's Isolation
@@ -19,6 +20,8 @@ class CustomPlayer(DataPlayer):
       any pickleable object to the self.context attribute.
     **********************************************************************
     """
+    
+
     def get_action(self, state):
         """ Employ an adversarial search technique to choose an action
         available in the current state calls self.queue.put(ACTION) at least
@@ -39,7 +42,7 @@ class CustomPlayer(DataPlayer):
         if state.ply_count < 2:
             self.queue.put(random.choice(state.actions()))
         else:
-            self.queue.put(self.alphabeta_search(state, 3))
+            self.queue.put(self.alphabeta_search(state, SEARCH_DEPTH))
 
     def alphabeta_search(self, state, depth):    
 
@@ -66,10 +69,10 @@ class CustomPlayer(DataPlayer):
         return max(state.actions(), key=lambda x: min_value(state.result(x), depth - 1, float('-inf'), float('inf')))       
         
     def score(self, state):
-        own_loc = state.locs[self.player_id]
-        opp_loc = state.locs[1 - self.player_id]
-        own_liberties = state.liberties(own_loc)     
-        opp_liberties = state.liberties(opp_loc)
-        future_own_liberties = sum(len(state.liberties(l)) for l in own_liberties)
-        future_opp_liberties = sum(len(state.liberties(l)) for l in opp_liberties)
-        return len(own_liberties) - 2 * len(opp_liberties) +  future_own_liberties - future_opp_liberties
+        own_loc, opp_loc = (state.locs[self.player_id], state.locs[1 - self.player_id])
+        possible_positions, opponent_possible_positions = (state.liberties(own_loc), state.liberties(opp_loc) )
+        future_possible_positions = sum(len(state.liberties(l)) for l in possible_positions)
+        future_opponent_possible_positions = sum(len(state.liberties(l)) for l in opponent_possible_positions)
+        return len(possible_positions) - 2* len(opponent_possible_positions) +  future_possible_positions - 1.5* future_opponent_possible_positions
+        
+   
